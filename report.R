@@ -101,7 +101,36 @@ tele_res$aggregate(list(msr("classif.ce"),
                         msr("classif.fpr"),
                         msr("classif.fnr")))
 
-###improve the model
+
+###improve the model-logistic regression
+set.seed(212)
+search_space = ps(
+  epsilon = p_dbl(lower = 1e-20, upper = 1e-5),
+  maxit = p_int(lower = 1, upper = 50)
+)
+search_space
+measures=msr("classif.acc")
+library("mlr3tuning")
+
+evals30 = trm("evals", n_evals = 30) 
+
+instance = TuningInstanceMultiCrit$new(
+  task = tele_task,
+  learner = lrn_log_reg ,
+  resampling = cv5,
+  measures = measures,
+  search_space = search_space,
+  terminator = evals30
+)
+instance
+
+tuner = tnr("grid_search", resolution = 5)
+tuner$optimize(instance)
+instance$result_y
+instance$result_learner_param_vals
+
+
+###improve the model-random forest
 set.seed(212)
 search_space1 = ps(
   mtry = p_int(lower = 1, upper = 12),
@@ -125,12 +154,14 @@ instance1 = TuningInstanceMultiCrit$new(
 )
 instance1
 
-tuner1=tnr("random_search")
-#tuner1 = tnr("grid_search", resolution = 5)
+
+tuner1 = tnr("grid_search", resolution = 5)
 tuner1$optimize(instance1)
 instance1$result_y
 instance1$result_learner_param_vals
 
+
+####we choose random forest as our final model
 
 ###improved random forest-finalized model
 ##split the data
@@ -166,7 +197,6 @@ install.packages("precrec")
 pred_rf_prob = learner_rf$predict(tele_task, row_ids = test_set)
 library(ggplot2)
 autoplot(pred_rf_prob,type="roc")
-
 
 
 
