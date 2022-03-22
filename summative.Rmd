@@ -217,6 +217,7 @@ res = resample(tele_task, learner = learner_rf, resampling = resampling)
 res$aggregate(msr("classif.acc"))
 ```
 
+###roc plot
 ```{r}
 
 pred_rf_prob = learner_rf$predict(tele_task, row_ids = test_set)
